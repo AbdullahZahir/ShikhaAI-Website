@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShikhaAI — Turn any topic into a video or a podcast</title>
+<meta name="description" content="ShikhaAI writes the script, illustrates the scenes, and narrates it — or turns your topic into a two-host podcast. Open source, adapts to every learner, runs on your own OpenAI key.">
+<link rel="icon" type="image/png" href="assets/flame.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0E14;
+    --panel:#12141F;
+    --panel-2:#161A28;
+    --line:#242A3D;
+    --ember-a:#7C6CF0;
+    --ember-b:#22D3EE;
+    --paper:#EDEEF5;
+    --smoke:#8D93A8;
+    --smoke-2:#5B6076;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Manrope',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Poppins',sans-serif;
+    line-height:1.15;
+    margin:0;
+  }
+  a{color:inherit}
+  img{max-width:100%;display:block}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  :focus-visible{
+    outline:2px solid var(--ember-b);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+  /* ---------------- Nav ---------------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(11,14,20,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;max-width:1140px;margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .brand img{width:28px;height:28px}
+  .brand span{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:var(--paper)}
+  .brand span em{
+    font-style:normal;
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .nav-links{display:flex;align-items:center;gap:28px;list-style:none;margin:0;padding:0}
+  .nav-links a{
+    text-decoration:none;color:var(--smoke);font-size:14px;font-weight:600;
+    transition:color .15s ease;
+  }
+  .nav-links a:hover{color:var(--paper)}
+  .btn-nav{
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    color:#fff !important;padding:9px 18px;border-radius:9px;
+    font-weight:700;font-size:14px;
+  }
+
+  /* ---------------- Hero ---------------- */
+  .hero{
+    position:relative;overflow:hidden;
+    padding:96px 24px 64px;
+  }
+  .hero-grid{
+    max-width:1140px;margin:0 auto;
+    display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;
+  }
+  .eyebrow{
+    display:inline-block;font-family:'JetBrains Mono',monospace;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ember-b);border:1px solid rgba(34,211,238,0.35);
+    background:rgba(34,211,238,0.06);
+    padding:6px 12px;border-radius:20px;margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:52px;font-weight:800;letter-spacing:-0.02em;color:#fff;
+    margin-bottom:20px;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(100deg,var(--ember-a),var(--ember-b));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{
+    font-size:17px;color:var(--smoke);max-width:480px;margin-bottom:32px;
+  }
+  .cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:28px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;
+    text-decoration:none;transition:transform .15s ease, box-shadow .15s ease;
+    border:1px solid transparent;cursor:pointer;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    color:#fff;box-shadow:0 8px 24px -8px rgba(124,108,240,0.6);
+  }
+  .btn-secondary{
+    background:var(--panel-2);color:var(--paper);border-color:var(--line);
+  }
+  .btn-secondary:hover{border-color:var(--ember-b)}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:22px;color:var(--smoke-2);font-size:13px}
+  .hero-meta span{display:flex;align-items:center;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--ember-b);flex:none}
+
+  /* Flame signature */
+  .flame-stage{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    height:420px;
+  }
+  .glow{
+    position:absolute;width:340px;height:340px;border-radius:50%;
+    background:radial-gradient(circle, rgba(124,108,240,0.55), rgba(34,211,238,0.18) 55%, transparent 72%);
+    filter:blur(30px);
+    animation:drift 7s ease-in-out infinite alternate;
+  }
+  .flame-img{
+    position:relative;width:220px;z-index:2;
+    filter:drop-shadow(0 18px 40px rgba(34,211,238,0.25));
+    animation:flicker 4.2s ease-in-out infinite;
+    transform-origin:50% 85%;
+  }
+  .topic-chip{
+    position:absolute;bottom:18px;z-index:3;
+    background:var(--panel-2);border:1px solid var(--line);
+    padding:9px 16px;border-radius:24px;font-family:'JetBrains Mono',monospace;
+    font-size:13px;color:var(--paper);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,0.6);
+    white-space:nowrap;
+  }
+  @keyframes drift{
+    0%{transform:translate(-8px,4px) scale(1)}
+    100%{transform:translate(10px,-10px) scale(1.08)}
+  }
+  @keyframes flicker{
+    0%,100%{transform:rotate(-1deg) scale(1)}
+    22%{transform:rotate(1deg) scale(1.02)}
+    45%{transform:rotate(-0.5deg) scale(0.985)}
+    68%{transform:rotate(0.8deg) scale(1.015)}
+    85%{transform:rotate(-1.2deg) scale(0.995)}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .glow,.flame-img{animation:none}
+  }
+
+  /* ---------------- Trust bar ---------------- */
+  .trust{
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(124,108,240,0.05), transparent);
+  }
+  .trust-wrap{
+    max-width:1140px;margin:0 auto;padding:36px 24px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center;
+  }
+  .trust-item .num{
+    font-family:'Poppins',sans-serif;font-weight:800;font-size:34px;
+    background:linear-gradient(100deg,var(--ember-a),var(--ember-b));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:4px;
+  }
+  .trust-item .label{color:var(--smoke);font-size:13px;letter-spacing:.02em}
+
+  /* ---------------- Section shared ---------------- */
+  section{padding:88px 24px}
+  .section-head{max-width:640px;margin:0 auto 52px;text-align:center}
+  .section-head .eyebrow{margin-bottom:16px}
+  .section-head h2{font-size:34px;color:#fff;margin-bottom:14px;letter-spacing:-0.01em}
+  .section-head p{color:var(--smoke);font-size:16px}
+
+  /* ---------------- Two ways ---------------- */
+  .modes{
+    max-width:1140px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+  }
+  .mode-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:20px;
+    padding:36px;
+  }
+  .mode-card .tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;
+    color:var(--ember-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;
+  }
+  .mode-card h3{font-size:23px;color:#fff;margin-bottom:12px}
+  .mode-card p{color:var(--smoke);font-size:15px;margin:0}
+  .mode-card.video{border-color:rgba(124,108,240,0.35)}
+  .mode-card.podcast{border-color:rgba(34,211,238,0.35)}
+
+  /* ---------------- Showcase ---------------- */
+  .showcase-frame{
+    max-width:980px;margin:0 auto;position:relative;
+  }
+  .showcase-glow{
+    position:absolute;inset:-40px;
+    background:radial-gradient(60% 60% at 50% 40%, rgba(124,108,240,0.18), transparent 70%);
+    filter:blur(10px);z-index:0;
+  }
+  .showcase-card{
+    position:relative;z-index:1;
+    background:var(--panel);border:1px solid var(--line);border-radius:20px;
+    padding:14px;box-shadow:0 40px 80px -40px rgba(0,0,0,0.8);
+  }
+  .showcase-card img{border-radius:12px;width:100%}
+  .showcase-caption{
+    text-align:center;color:var(--smoke);font-size:14px;margin-top:22px;
+  }
+  .showcase-caption strong{color:var(--paper)}
+
+  /* ---------------- Features grid ---------------- */
+  .features{
+    max-width:1140px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  }
+  .feature{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:26px;transition:border-color .15s ease, transform .15s ease;
+  }
+  .feature:hover{border-color:rgba(124,108,240,0.4);transform:translateY(-3px)}
+  .feature h3{font-size:16px;color:#fff;margin-bottom:8px}
+  .feature p{color:var(--smoke);font-size:14px;margin:0}
+
+  /* ---------------- Motto banner ---------------- */
+  .motto{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg, rgba(124,108,240,0.08), rgba(34,211,238,0.06));
+    padding:16px 24px;text-align:center;
+  }
+  .motto p{
+    margin:0;font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;
+    color:var(--paper);letter-spacing:.01em;
+  }
+  .motto p .grad{
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+
+  /* ---------------- Commitments (checklist) ---------------- */
+  .commitments{background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .commitments-wrap{
+    max-width:900px;margin:0 auto;padding:0 24px;text-align:center;
+  }
+  .commit-row{
+    display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px;
+  }
+  .commit-pill{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 22px;font-weight:700;color:var(--paper);font-size:15px;
+  }
+  .commit-pill .check{
+    width:22px;height:22px;border-radius:50%;flex:none;
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:13px;font-weight:800;
+  }
+
+
+  /* ---------------- Testimonials ---------------- */
+  .testimonials{
+    max-width:1140px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  }
+  .testimonial{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:28px;display:flex;flex-direction:column;
+  }
+  .testimonial .who{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ember-b);
+    letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px;
+  }
+  .testimonial blockquote{
+    margin:0 0 16px;font-size:16px;color:var(--paper);font-style:italic;
+    line-height:1.55;flex:1;
+  }
+  .testimonial p.context{margin:0;color:var(--smoke);font-size:14px}
+
+  /* ---------------- Install ---------------- */
+  .install{max-width:820px;margin:0 auto}
+  .req-row{
+    display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:36px;
+  }
+  .req-pill{
+    display:flex;align-items:center;gap:9px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 18px;font-size:14px;color:var(--paper);
+  }
+  .req-pill .req-num{
+    width:22px;height:22px;border-radius:50%;flex:none;
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .req-pill a{color:var(--ember-b);text-decoration:none;font-weight:600}
+  .req-pill a:hover{text-decoration:underline}
+
+  .terminal{
+    background:#090B10;border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,0.7);
+  }
+  .terminal-bar{
+    display:flex;gap:7px;padding:14px 16px;border-bottom:1px solid var(--line);
+  }
+  .terminal-bar span{width:11px;height:11px;border-radius:50%;background:#333a4d}
+  .terminal-body{padding:24px 26px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:2}
+  .terminal-body .c{color:var(--smoke-2)}
+  .terminal-body .g{color:var(--ember-b)}
+
+  .env-callout{
+    max-width:820px;margin:22px auto 0;
+    background:var(--panel);border:1px solid rgba(124,108,240,0.35);border-radius:14px;
+    padding:22px 26px;
+  }
+  .env-callout .callout-head{
+    display:flex;align-items:center;gap:10px;margin-bottom:10px;
+    font-weight:700;color:#fff;font-size:15px;
+  }
+  .env-callout .callout-head .req-num{
+    width:22px;height:22px;border-radius:50%;flex:none;
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .env-callout p{color:var(--smoke);font-size:14px;margin:0 0 14px}
+  .env-callout code.block{
+    display:block;background:#090B10;border:1px solid var(--line);border-radius:10px;
+    padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ember-b);
+  }
+  .install-note{
+    text-align:center;color:var(--smoke-2);font-size:13px;margin-top:20px;
+  }
+
+  /* ---------------- Footer ---------------- */
+  footer{
+    border-top:1px solid var(--line);padding:40px 24px;
+  }
+  .footer-wrap{
+    max-width:1140px;margin:0 auto;display:flex;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;gap:16px;
+  }
+  .footer-brand{display:flex;align-items:center;gap:10px;color:var(--smoke)}
+  .footer-brand img{width:20px;height:20px}
+  .footer-links{display:flex;gap:22px;list-style:none;padding:0;margin:0}
+  .footer-links a{color:var(--smoke);text-decoration:none;font-size:14px}
+  .footer-links a:hover{color:var(--paper)}
+
+  @media (max-width: 880px){
+    .hero-grid{grid-template-columns:1fr}
+    .flame-stage{height:260px;order:-1}
+    .hero h1{font-size:38px}
+    .modes{grid-template-columns:1fr}
+    .features{grid-template-columns:1fr 1fr}
+    .testimonials{grid-template-columns:1fr}
+    .trust-wrap{grid-template-columns:1fr}
+    .nav-links{display:none}
+  }
+  @media (max-width: 520px){
+    .features{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#" class="brand">
+      <img src="assets/flame.png" alt="">
+      <span>Shikha<em>AI</em></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#modes">Features</a></li>
+      <li><a href="#story">Mission</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="https://github.com/AbdullahZahir/ShikhaAI">GitHub</a></li>
+      <li><a href="https://github.com/AbdullahZahir/ShikhaAI/releases/latest" class="btn-nav">Download</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="motto">
+  <p>Every learner deserves a lesson built <span class="grad">for them</span> — that's the whole idea behind ShikhaAI.</p>
+</div>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow">open source · runs on your own OpenAI key</span>
+      <h1>Give it a topic.<br>Get a <span class="grad">video</span> or a <span class="grad">podcast</span>.</h1>
+      <p class="lead">ShikhaAI writes the script, illustrates the scenes, and narrates it — or turns your topic into a two-host conversation. Pick a grade level, hit generate, and watch it build.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/AbdullahZahir/ShikhaAI/releases/latest">Download for Windows</a>
+        <a class="btn btn-secondary" href="https://github.com/AbdullahZahir/ShikhaAI">View source on GitHub</a>
+      </div>
+      <div class="hero-meta">
+        <span><i class="dot"></i> Free & open source</span>
+        <span><i class="dot"></i> Python desktop app</span>
+        <span><i class="dot"></i> Your API key, your data</span>
+      </div>
+    </div>
+    <div class="flame-stage">
+      <div class="glow"></div>
+      <img class="flame-img" src="assets/flame.png" alt="ShikhaAI flame mark">
+      <div class="topic-chip" id="topic-chip">why do volcanoes erupt?</div>
+    </div>
+  </div>
+</section>
+
+<div class="trust">
+  <div class="trust-wrap">
+    <div class="trust-item">
+      <div class="num">50+</div>
+      <div class="label">Active learners</div>
+    </div>
+    <div class="trust-item">
+      <div class="num">4</div>
+      <div class="label">Partner libraries</div>
+    </div>
+    <div class="trust-item">
+      <div class="num">100%</div>
+      <div class="label">Open source</div>
+    </div>
+  </div>
+</div>
+
+<section id="modes">
+  <div class="section-head">
+    <span class="eyebrow">two ways to learn</span>
+    <h2>Same topic, two different outputs</h2>
+    <p>Choose whichever fits how you actually learn — or how you'll use it in class.</p>
+  </div>
+  <div class="modes">
+    <div class="mode-card video">
+      <span class="tag">Video + Script</span>
+      <h3>A narrated, illustrated video</h3>
+      <p>ShikhaAI writes a grade-appropriate script, illustrates each scene, and narrates the whole thing — with soft pan-and-zoom motion instead of static slides. Don't like one scene? Regenerate just that one from the storyboard view.</p>
+    </div>
+    <div class="mode-card podcast">
+      <span class="tag">Podcast</span>
+      <h3>A two-host conversation</h3>
+      <p>Shimmer and Echo — one energetic, one thoughtful — talk through your topic like an actual podcast, not a lecture read aloud. Adjustable playback speed, and an optional quiet music bed if you want one.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <span class="eyebrow">see it in action</span>
+    <h2>A real lesson, start to finish</h2>
+    <p>An actual ShikhaAI session — one topic in, a script, a storyboard, and a narrated video out.</p>
+  </div>
+  <div class="showcase-frame">
+    <div class="showcase-glow"></div>
+    <div class="showcase-card">
+      <img src="assets/showcase-momentum.png" alt="ShikhaAI generating a video on momentum, showing the script panel, video preview, and illustrated storyboard scenes">
+    </div>
+  </div>
+  <p class="showcase-caption">A real generated lesson on <strong>momentum</strong> — script, a narrated video with full playback controls, and a six-scene illustrated storyboard, all from one topic.</p>
+</section>
+
+<section>
+  <div class="section-head">
+    <span class="eyebrow">what's inside</span>
+    <h2>Built for actually using it</h2>
+    <p>Not just a demo — the details that make it usable day to day.</p>
+  </div>
+  <div class="features">
+    <div class="feature">
+      <h3>Storyboard editor</h3>
+      <p>See every generated scene as a thumbnail. Click to view full-size, or redo just one without re-rendering the whole video.</p>
+    </div>
+    <div class="feature">
+      <h3>Cost-aware model tiers</h3>
+      <p>Budget, Balanced, or Higher quality — pick how much you want to spend before you generate anything.</p>
+    </div>
+    <div class="feature">
+      <h3>Voice preview</h3>
+      <p>Hear a narrator voice before committing a whole video to it.</p>
+    </div>
+    <div class="feature">
+      <h3>Searchable library</h3>
+      <p>Every video and podcast you make is saved automatically — searchable, filterable by grade, sortable by date.</p>
+    </div>
+    <div class="feature">
+      <h3>Optional podcast music</h3>
+      <p>A quiet ambient bed, fully synthesized locally — no licensed audio, no copyright questions.</p>
+    </div>
+    <div class="feature">
+      <h3>Real playback controls</h3>
+      <p>Play, pause, resume, adjustable podcast speed — a proper media player, not just a generated file.</p>
+    </div>
+  </div>
+</section>
+
+<section class="commitments" id="story">
+  <div class="commitments-wrap">
+    <span class="eyebrow">what we stand for</span>
+    <div class="commit-row">
+      <div class="commit-pill"><span class="check">✓</span> Accommodates Special Needs Learners</div>
+      <div class="commit-pill"><span class="check">✓</span> All Grade Levels</div>
+      <div class="commit-pill"><span class="check">✓</span> Equitable Education</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <span class="eyebrow">real learners</span>
+    <h2>Stories from people using it</h2>
+    <p>A few of the reasons this exists in the first place.</p>
+  </div>
+  <div class="testimonials">
+    <div class="testimonial">
+      <div class="who">Neurodivergent learner</div>
+      <blockquote>"I didn't think I could understand training before."</blockquote>
+      <p class="context">Fast-paced classroom lessons were hard for Rithika to keep up with. Given the room to move at her own speed, she worked through an entire AI curriculum on her own — and walked away genuinely proud of it.</p>
+    </div>
+    <div class="testimonial">
+      <div class="who">4th grade, self-taught 8th grade math</div>
+      <blockquote>"Bhaia, look — you carry the exponent here and they cancel out! Your cool little app showed me a video on how to do that!"</blockquote>
+      <p class="context">A single generated video was enough for Aleena, a fourth grader, to work out an eighth-grade math concept years ahead of seeing it in school.</p>
+    </div>
+    <div class="testimonial">
+      <div class="who">AP Chemistry</div>
+      <blockquote>Titration finally clicked.</blockquote>
+      <p class="context">Daniel's AP Chemistry class was moving faster than he could absorb it. A second, slower pass through the material with ShikhaAI was what finally made it stick.</p>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="section-head">
+    <span class="eyebrow">get it running</span>
+    <h2>Up in about five minutes</h2>
+    <p>Everything you need, in order — no extra steps hidden in a README you have to go hunting for.</p>
+  </div>
+  <div class="install">
+    <div class="req-row">
+      <div class="req-pill"><span class="req-num">1</span> Python 3.9 or newer</div>
+      <div class="req-pill"><span class="req-num">2</span> <a href="https://www.videolan.org/vlc/">VLC media player</a> installed</div>
+      <div class="req-pill"><span class="req-num">3</span> <a href="https://platform.openai.com/api-keys">OpenAI API key</a> with billing enabled</div>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-bar"><span></span><span></span><span></span></div>
+      <div class="terminal-body">
+        <div><span class="c">$</span> git clone https://github.com/AbdullahZahir/ShikhaAI.git</div>
+        <div><span class="c">$</span> cd ShikhaAI</div>
+        <div><span class="c">$</span> pip install -r requirements.txt</div>
+        <div><span class="c">$</span> <span class="g">python run.py</span></div>
+      </div>
+    </div>
+
+    <div class="env-callout">
+      <div class="callout-head"><span class="req-num">!</span> Before that last command — add your API key</div>
+      <p>Copy <code class="mono">.env.example</code> to a new file named <code class="mono">.env</code> in the same folder, then edit it:</p>
+      <code class="block">OPENAI_API_KEY=sk-your-key-here</code>
+    </div>
+
+    <p class="install-note">That's the whole setup — everything else happens inside the app.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-brand">
+      <img src="assets/flame.png" alt="">
+      <span>© 2026 ShikhaAI</span>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#story">Mission</a></li>
+      <li><a href="https://github.com/AbdullahZahir/ShikhaAI">GitHub</a></li>
+      <li><a href="https://github.com/AbdullahZahir/ShikhaAI/releases/latest">Download</a></li>
+      <li><a href="https://github.com/AbdullahZahir/ShikhaAI#readme">Documentation</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+  const topics = [
+    "why do volcanoes erupt?",
+    "how do vaccines work?",
+    "the french revolution",
+    "why is the sky blue?",
+    "how do black holes form?",
+    "how is a rainbow formed?",
+    "how do rockets work?",
+    "what is euler's method?",
+    "what is l'hôpital's rule?",
+    "what is simple harmonic motion?",
+    "why do cats purr?",
+    "how do birds fly?",
+    "where does rain come from?",
+    "why do bees make honey?"
+  ];
+  let i = 0;
+  const chip = document.getElementById('topic-chip');
+  chip.style.transition = 'opacity .3s ease';
+  setInterval(() => {
+    i = (i + 1) % topics.length;
+    chip.style.opacity = 0;
+    setTimeout(() => {
+      chip.textContent = topics[i];
+      chip.style.opacity = 1;
+    }, 300);
+  }, 2600);
+</script>
+
+</body>
+</html>
