@@ -31,6 +31,7 @@
     font-family:'Manrope',sans-serif;
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
   h1,h2,h3{
     font-family:'Poppins',sans-serif;
@@ -49,19 +50,53 @@
 
   .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
 
+  /* ---------------- Ambient layers ---------------- */
+  /* Soft fixed light that pools toward the top of the page — gives depth
+     behind the hero without adding another glowing box. */
+  .aura{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 40% at 22% -6%, rgba(124,108,240,0.16), transparent 60%),
+      radial-gradient(52% 38% at 88% -2%, rgba(34,211,238,0.10), transparent 60%);
+  }
+  /* Rising embers — the signature motion, drawn in JS. */
+  #embers{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    width:100%;height:100%;
+  }
+  /* Fine film grain so surfaces read as crafted, not flat. */
+  .grain{
+    position:fixed;inset:0;z-index:4;pointer-events:none;
+    opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Everything real sits above the ambient layers. */
+  header, .motto, .hero, .trust, section, footer{position:relative;z-index:1}
+
   /* ---------------- Nav ---------------- */
   header{
     position:sticky;top:0;z-index:50;
-    background:rgba(11,14,20,0.85);
-    backdrop-filter:blur(10px);
+    background:rgba(11,14,20,0.72);
+    backdrop-filter:blur(14px) saturate(120%);
     border-bottom:1px solid var(--line);
+    transition:border-color .3s ease, background .3s ease;
+  }
+  header.scrolled{
+    background:rgba(11,14,20,0.9);
+    border-bottom-color:rgba(124,108,240,0.28);
   }
   nav{
     display:flex;align-items:center;justify-content:space-between;
     padding:16px 24px;max-width:1140px;margin:0 auto;
   }
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-  .brand img{width:28px;height:28px}
+  .brand img{
+    width:28px;height:28px;
+    transition:transform .5s cubic-bezier(.2,.8,.2,1), filter .3s ease;
+    filter:drop-shadow(0 2px 8px rgba(34,211,238,0.35));
+  }
+  .brand:hover img{transform:rotate(-8deg) scale(1.08)}
   .brand span{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:var(--paper)}
   .brand span em{
     font-style:normal;
@@ -70,15 +105,28 @@
   }
   .nav-links{display:flex;align-items:center;gap:28px;list-style:none;margin:0;padding:0}
   .nav-links a{
+    position:relative;
     text-decoration:none;color:var(--smoke);font-size:14px;font-weight:600;
-    transition:color .15s ease;
+    transition:color .2s ease;
   }
-  .nav-links a:hover{color:var(--paper)}
+  /* Animated underline that wipes in from the left. */
+  .nav-links a:not(.btn-nav)::after{
+    content:"";position:absolute;left:0;bottom:-6px;height:2px;width:100%;
+    background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
+    transform:scaleX(0);transform-origin:left;
+    transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    border-radius:2px;
+  }
+  .nav-links a:not(.btn-nav):hover{color:var(--paper)}
+  .nav-links a:not(.btn-nav):hover::after{transform:scaleX(1)}
   .btn-nav{
     background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
     color:#fff !important;padding:9px 18px;border-radius:9px;
     font-weight:700;font-size:14px;
+    box-shadow:0 6px 18px -8px rgba(124,108,240,0.7);
+    transition:transform .18s ease, box-shadow .18s ease;
   }
+  .btn-nav:hover{transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(124,108,240,0.85)}
 
   /* ---------------- Hero ---------------- */
   .hero{
@@ -90,17 +138,29 @@
     display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;
   }
   .eyebrow{
-    display:inline-block;font-family:'JetBrains Mono',monospace;
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;
     font-size:12px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--ember-b);border:1px solid rgba(34,211,238,0.35);
     background:rgba(34,211,238,0.06);
     padding:6px 12px;border-radius:20px;margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--ember-b);
+    box-shadow:0 0 8px var(--ember-b);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:.5;transform:scale(.85)}
+    50%{opacity:1;transform:scale(1.15)}
   }
   .hero h1{
     font-size:52px;font-weight:800;letter-spacing:-0.02em;color:#fff;
     margin-bottom:20px;
   }
   .hero h1 .grad{
+    position:relative;
     background:linear-gradient(100deg,var(--ember-a),var(--ember-b));
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
@@ -109,9 +169,10 @@
   }
   .cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:28px}
   .btn{
+    position:relative;overflow:hidden;
     display:inline-flex;align-items:center;gap:9px;
     padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;
-    text-decoration:none;transition:transform .15s ease, box-shadow .15s ease;
+    text-decoration:none;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     border:1px solid transparent;cursor:pointer;
   }
   .btn:hover{transform:translateY(-2px)}
@@ -119,24 +180,45 @@
     background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
     color:#fff;box-shadow:0 8px 24px -8px rgba(124,108,240,0.6);
   }
+  .btn-primary:hover{box-shadow:0 16px 38px -10px rgba(124,108,240,0.75)}
+  /* Sheen that sweeps across the primary button on hover. */
+  .btn-primary::after{
+    content:"";position:absolute;top:0;left:-120%;width:70%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,0.35),transparent);
+    transform:skewX(-18deg);transition:none;
+  }
+  .btn-primary:hover::after{left:150%;transition:left .7s cubic-bezier(.2,.7,.2,1)}
   .btn-secondary{
     background:var(--panel-2);color:var(--paper);border-color:var(--line);
   }
-  .btn-secondary:hover{border-color:var(--ember-b)}
+  .btn-secondary:hover{border-color:var(--ember-b);box-shadow:0 10px 30px -14px rgba(34,211,238,0.5)}
   .hero-meta{display:flex;flex-wrap:wrap;gap:22px;color:var(--smoke-2);font-size:13px}
   .hero-meta span{display:flex;align-items:center;gap:6px}
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--ember-b);flex:none}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--ember-b);flex:none;box-shadow:0 0 6px rgba(34,211,238,0.6)}
 
   /* Flame signature */
   .flame-stage{
     position:relative;display:flex;align-items:center;justify-content:center;
     height:420px;
   }
+  /* This whole group leans a few pixels toward the cursor (set in JS). */
+  .flame-parallax{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    width:100%;height:100%;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
+  }
   .glow{
     position:absolute;width:340px;height:340px;border-radius:50%;
     background:radial-gradient(circle, rgba(124,108,240,0.55), rgba(34,211,238,0.18) 55%, transparent 72%);
     filter:blur(30px);
     animation:drift 7s ease-in-out infinite alternate;
+  }
+  /* A second, slower halo for depth. */
+  .glow.halo{
+    width:420px;height:420px;opacity:.5;
+    background:radial-gradient(circle, rgba(34,211,238,0.28), transparent 66%);
+    animation:drift 11s ease-in-out infinite alternate-reverse;
   }
   .flame-img{
     position:relative;width:220px;z-index:2;
@@ -146,12 +228,21 @@
   }
   .topic-chip{
     position:absolute;bottom:18px;z-index:3;
+    display:inline-flex;align-items:center;gap:8px;
     background:var(--panel-2);border:1px solid var(--line);
     padding:9px 16px;border-radius:24px;font-family:'JetBrains Mono',monospace;
     font-size:13px;color:var(--paper);
     box-shadow:0 10px 30px -12px rgba(0,0,0,0.6);
     white-space:nowrap;
+    transition:opacity .3s ease, transform .3s ease, border-color .3s ease;
   }
+  .topic-chip .q-label{color:var(--ember-b);opacity:.85}
+  /* Blinking caret at the end of the question. */
+  .topic-chip .caret{
+    width:2px;height:14px;background:var(--ember-b);border-radius:1px;
+    animation:blink 1.05s step-end infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
   @keyframes drift{
     0%{transform:translate(-8px,4px) scale(1)}
     100%{transform:translate(10px,-10px) scale(1.08)}
@@ -163,9 +254,6 @@
     68%{transform:rotate(0.8deg) scale(1.015)}
     85%{transform:rotate(-1.2deg) scale(0.995)}
   }
-  @media (prefers-reduced-motion: reduce){
-    .glow,.flame-img{animation:none}
-  }
 
   /* ---------------- Trust bar ---------------- */
   .trust{
@@ -176,11 +264,16 @@
     max-width:1140px;margin:0 auto;padding:36px 24px;
     display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center;
   }
+  .trust-item{position:relative}
+  .trust-item + .trust-item::before{
+    content:"";position:absolute;left:0;top:14%;height:72%;width:1px;
+    background:linear-gradient(180deg,transparent,var(--line),transparent);
+  }
   .trust-item .num{
     font-family:'Poppins',sans-serif;font-weight:800;font-size:34px;
     background:linear-gradient(100deg,var(--ember-a),var(--ember-b));
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    margin-bottom:4px;
+    margin-bottom:4px;font-variant-numeric:tabular-nums;
   }
   .trust-item .label{color:var(--smoke);font-size:13px;letter-spacing:.02em}
 
@@ -191,6 +284,19 @@
   .section-head h2{font-size:34px;color:#fff;margin-bottom:14px;letter-spacing:-0.01em}
   .section-head p{color:var(--smoke);font-size:16px}
 
+  /* Reusable card spotlight: a soft light follows the cursor across the card.
+     --mx/--my are updated per-card in JS; falls back to a gentle top glow. */
+  .spot{
+    position:relative;overflow:hidden;
+    --mx:50%;--my:0%;
+  }
+  .spot::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(220px circle at var(--mx) var(--my), rgba(124,108,240,0.16), transparent 60%);
+    opacity:0;transition:opacity .3s ease;
+  }
+  .spot:hover::before{opacity:1}
+
   /* ---------------- Two ways ---------------- */
   .modes{
     max-width:1140px;margin:0 auto;
@@ -199,7 +305,9 @@
   .mode-card{
     background:var(--panel);border:1px solid var(--line);border-radius:20px;
     padding:36px;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), border-color .25s ease, box-shadow .25s ease;
   }
+  .mode-card:hover{transform:translateY(-4px);box-shadow:0 30px 60px -34px rgba(0,0,0,0.85)}
   .mode-card .tag{
     display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;
     color:var(--ember-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;
@@ -207,7 +315,10 @@
   .mode-card h3{font-size:23px;color:#fff;margin-bottom:12px}
   .mode-card p{color:var(--smoke);font-size:15px;margin:0}
   .mode-card.video{border-color:rgba(124,108,240,0.35)}
+  .mode-card.video:hover{border-color:rgba(124,108,240,0.7)}
   .mode-card.podcast{border-color:rgba(34,211,238,0.35)}
+  .mode-card.podcast:hover{border-color:rgba(34,211,238,0.7)}
+  .mode-card.podcast.spot::before{background:radial-gradient(220px circle at var(--mx) var(--my), rgba(34,211,238,0.16), transparent 60%)}
 
   /* ---------------- Showcase ---------------- */
   .showcase-frame{
@@ -222,7 +333,9 @@
     position:relative;z-index:1;
     background:var(--panel);border:1px solid var(--line);border-radius:20px;
     padding:14px;box-shadow:0 40px 80px -40px rgba(0,0,0,0.8);
+    transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease;
   }
+  .showcase-card:hover{transform:translateY(-6px);box-shadow:0 60px 110px -46px rgba(0,0,0,0.9)}
   .showcase-card img{border-radius:12px;width:100%}
   .showcase-caption{
     text-align:center;color:var(--smoke);font-size:14px;margin-top:22px;
@@ -236,10 +349,18 @@
   }
   .feature{
     background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    padding:26px;transition:border-color .15s ease, transform .15s ease;
+    padding:26px;transition:border-color .2s ease, transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
   }
-  .feature:hover{border-color:rgba(124,108,240,0.4);transform:translateY(-3px)}
-  .feature h3{font-size:16px;color:#fff;margin-bottom:8px}
+  .feature:hover{border-color:rgba(124,108,240,0.5);transform:translateY(-4px);box-shadow:0 24px 48px -30px rgba(0,0,0,0.8)}
+  .feature h3{font-size:16px;color:#fff;margin-bottom:8px;display:flex;align-items:center;gap:9px}
+  /* A small brand tick before each feature title — quiet, not an emoji. */
+  .feature h3::before{
+    content:"";width:7px;height:7px;border-radius:2px;flex:none;
+    background:linear-gradient(135deg,var(--ember-a),var(--ember-b));
+    transform:rotate(45deg);
+    transition:transform .25s ease;
+  }
+  .feature:hover h3::before{transform:rotate(45deg) scale(1.35)}
   .feature p{color:var(--smoke);font-size:14px;margin:0}
 
   /* ---------------- Motto banner ---------------- */
@@ -269,6 +390,12 @@
     display:flex;align-items:center;gap:10px;
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:16px 22px;font-weight:700;color:var(--paper);font-size:15px;
+    transition:transform .22s cubic-bezier(.2,.8,.2,1), border-color .22s ease, box-shadow .22s ease;
+  }
+  .commit-pill:hover{
+    transform:translateY(-3px);
+    border-color:rgba(34,211,238,0.5);
+    box-shadow:0 18px 36px -24px rgba(34,211,238,0.5);
   }
   .commit-pill .check{
     width:22px;height:22px;border-radius:50%;flex:none;
@@ -286,12 +413,15 @@
   .testimonial{
     background:var(--panel);border:1px solid var(--line);border-radius:18px;
     padding:28px;display:flex;flex-direction:column;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), border-color .25s ease, box-shadow .25s ease;
   }
+  .testimonial:hover{transform:translateY(-4px);border-color:rgba(124,108,240,0.4);box-shadow:0 26px 52px -32px rgba(0,0,0,0.8)}
   .testimonial .who{
     font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ember-b);
     letter-spacing:.05em;text-transform:uppercase;margin-bottom:16px;
   }
   .testimonial blockquote{
+    position:relative;
     margin:0 0 16px;font-size:16px;color:var(--paper);font-style:italic;
     line-height:1.55;flex:1;
   }
@@ -306,7 +436,9 @@
     display:flex;align-items:center;gap:9px;
     background:var(--panel);border:1px solid var(--line);border-radius:12px;
     padding:12px 18px;font-size:14px;color:var(--paper);
+    transition:transform .2s ease, border-color .2s ease;
   }
+  .req-pill:hover{transform:translateY(-2px);border-color:rgba(124,108,240,0.45)}
   .req-pill .req-num{
     width:22px;height:22px;border-radius:50%;flex:none;
     background:linear-gradient(90deg,var(--ember-a),var(--ember-b));
@@ -319,12 +451,24 @@
   .terminal{
     background:#090B10;border:1px solid var(--line);border-radius:14px;
     overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,0.7);
+    transition:border-color .3s ease, box-shadow .3s ease;
   }
+  .terminal:hover{border-color:rgba(34,211,238,0.35);box-shadow:0 40px 80px -36px rgba(0,0,0,0.85)}
   .terminal-bar{
     display:flex;gap:7px;padding:14px 16px;border-bottom:1px solid var(--line);
+    align-items:center;
   }
-  .terminal-bar span{width:11px;height:11px;border-radius:50%;background:#333a4d}
+  .terminal-bar span{width:11px;height:11px;border-radius:50%;background:#333a4d;transition:background .3s ease}
+  .terminal:hover .terminal-bar span:nth-child(1){background:#ff5f57}
+  .terminal:hover .terminal-bar span:nth-child(2){background:#febc2e}
+  .terminal:hover .terminal-bar span:nth-child(3){background:#28c840}
   .terminal-body{padding:24px 26px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:2}
+  .terminal-body > div{opacity:0;transform:translateX(-6px);animation:lineIn .4s forwards}
+  .terminal-body > div:nth-child(1){animation-delay:.05s}
+  .terminal-body > div:nth-child(2){animation-delay:.20s}
+  .terminal-body > div:nth-child(3){animation-delay:.35s}
+  .terminal-body > div:nth-child(4){animation-delay:.50s}
+  @keyframes lineIn{to{opacity:1;transform:none}}
   .terminal-body .c{color:var(--smoke-2)}
   .terminal-body .g{color:var(--ember-b)}
 
@@ -363,8 +507,27 @@
   .footer-brand{display:flex;align-items:center;gap:10px;color:var(--smoke)}
   .footer-brand img{width:20px;height:20px}
   .footer-links{display:flex;gap:22px;list-style:none;padding:0;margin:0}
-  .footer-links a{color:var(--smoke);text-decoration:none;font-size:14px}
+  .footer-links a{position:relative;color:var(--smoke);text-decoration:none;font-size:14px;transition:color .2s ease}
   .footer-links a:hover{color:var(--paper)}
+
+  /* ---------------- Scroll reveal ---------------- */
+  [data-reveal]{
+    opacity:0;transform:translateY(20px);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);
+  }
+  [data-reveal].in{opacity:1;transform:none}
+  /* Staggered children inside a revealed group. */
+  [data-reveal-group] > *{
+    opacity:0;transform:translateY(20px);
+    transition:opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1);
+  }
+  [data-reveal-group].in > *{opacity:1;transform:none}
+  [data-reveal-group].in > *:nth-child(1){transition-delay:.00s}
+  [data-reveal-group].in > *:nth-child(2){transition-delay:.08s}
+  [data-reveal-group].in > *:nth-child(3){transition-delay:.16s}
+  [data-reveal-group].in > *:nth-child(4){transition-delay:.24s}
+  [data-reveal-group].in > *:nth-child(5){transition-delay:.32s}
+  [data-reveal-group].in > *:nth-child(6){transition-delay:.40s}
 
   @media (max-width: 880px){
     .hero-grid{grid-template-columns:1fr}
@@ -374,14 +537,27 @@
     .features{grid-template-columns:1fr 1fr}
     .testimonials{grid-template-columns:1fr}
     .trust-wrap{grid-template-columns:1fr}
+    .trust-item + .trust-item::before{display:none}
     .nav-links{display:none}
   }
   @media (max-width: 520px){
     .features{grid-template-columns:1fr}
   }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .glow,.flame-img,.eyebrow::before,.topic-chip .caret,.terminal-body > div{animation:none}
+    .flame-parallax{transition:none}
+    [data-reveal],[data-reveal-group] > *{opacity:1;transform:none;transition:none}
+    .terminal-body > div{opacity:1;transform:none}
+  }
 </style>
 </head>
 <body>
+
+<div class="aura" aria-hidden="true"></div>
+<canvas id="embers" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
 
 <header>
   <nav>
@@ -405,7 +581,7 @@
 
 <section class="hero">
   <div class="hero-grid">
-    <div>
+    <div data-reveal>
       <span class="eyebrow">open source · runs on your own OpenAI key</span>
       <h1>Give it a topic.<br>Get a <span class="grad">video</span> or a <span class="grad">podcast</span>.</h1>
       <p class="lead">ShikhaAI writes the script, illustrates the scenes, and narrates it — or turns your topic into a two-host conversation. Pick a grade level, hit generate, and watch it build.</p>
@@ -414,49 +590,56 @@
         <a class="btn btn-secondary" href="https://github.com/AbdullahZahir/ShikhaAI">View source on GitHub</a>
       </div>
       <div class="hero-meta">
-        <span><i class="dot"></i> Free & open source</span>
+        <span><i class="dot"></i> Free &amp; open source</span>
         <span><i class="dot"></i> Python desktop app</span>
         <span><i class="dot"></i> Your API key, your data</span>
       </div>
     </div>
-    <div class="flame-stage">
-      <div class="glow"></div>
-      <img class="flame-img" src="assets/flame.png" alt="ShikhaAI flame mark">
-      <div class="topic-chip" id="topic-chip">why do volcanoes erupt?</div>
+    <div class="flame-stage" id="flame-stage">
+      <div class="flame-parallax" id="flame-parallax">
+        <div class="glow halo"></div>
+        <div class="glow"></div>
+        <img class="flame-img" src="assets/flame.png" alt="ShikhaAI flame mark">
+        <div class="topic-chip" id="topic-chip">
+          <span class="q-label">?</span>
+          <span id="topic-text">why do volcanoes erupt?</span>
+          <span class="caret" aria-hidden="true"></span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <div class="trust">
-  <div class="trust-wrap">
+  <div class="trust-wrap" data-reveal-group>
     <div class="trust-item">
-      <div class="num">500+</div>
+      <div class="num" data-count="500" data-suffix="+">500+</div>
       <div class="label">Active learners</div>
     </div>
     <div class="trust-item">
-      <div class="num">4</div>
+      <div class="num" data-count="4">4</div>
       <div class="label">Partner libraries</div>
     </div>
     <div class="trust-item">
-      <div class="num">100%</div>
+      <div class="num" data-count="100" data-suffix="%">100%</div>
       <div class="label">Open source</div>
     </div>
   </div>
 </div>
 
 <section id="modes">
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <span class="eyebrow">two ways to learn</span>
     <h2>Same topic, two different outputs</h2>
     <p>Choose whichever fits how you actually learn — or how you'll use it in class.</p>
   </div>
-  <div class="modes">
-    <div class="mode-card video">
+  <div class="modes" data-reveal-group>
+    <div class="mode-card video spot">
       <span class="tag">Video + Script</span>
       <h3>A narrated, illustrated video</h3>
       <p>ShikhaAI writes a grade-appropriate script, illustrates each scene, and narrates the whole thing — with soft pan-and-zoom motion instead of static slides. Don't like one scene? Regenerate just that one from the storyboard view.</p>
     </div>
-    <div class="mode-card podcast">
+    <div class="mode-card podcast spot">
       <span class="tag">Podcast</span>
       <h3>A two-host conversation</h3>
       <p>Shimmer and Echo — one energetic, one thoughtful — talk through your topic like an actual podcast, not a lecture read aloud. Adjustable playback speed, and an optional quiet music bed if you want one.</p>
@@ -465,48 +648,48 @@
 </section>
 
 <section>
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <span class="eyebrow">see it in action</span>
     <h2>A real lesson, start to finish</h2>
     <p>An actual ShikhaAI session — one topic in, a script, a storyboard, and a narrated video out.</p>
   </div>
-  <div class="showcase-frame">
+  <div class="showcase-frame" data-reveal>
     <div class="showcase-glow"></div>
     <div class="showcase-card">
       <img src="assets/showcase-momentum.png" alt="ShikhaAI generating a video on momentum, showing the script panel, video preview, and illustrated storyboard scenes">
     </div>
   </div>
-  <p class="showcase-caption">A real generated lesson on <strong>momentum</strong> — script, a narrated video with full playback controls, and a six-scene illustrated storyboard, all from one topic.</p>
+  <p class="showcase-caption" data-reveal>A real generated lesson on <strong>momentum</strong> — script, a narrated video with full playback controls, and a six-scene illustrated storyboard, all from one topic.</p>
 </section>
 
 <section>
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <span class="eyebrow">what's inside</span>
     <h2>Built for actually using it</h2>
     <p>Not just a demo — the details that make it usable day to day.</p>
   </div>
-  <div class="features">
-    <div class="feature">
+  <div class="features" data-reveal-group>
+    <div class="feature spot">
       <h3>Storyboard editor</h3>
       <p>See every generated scene as a thumbnail. Click to view full-size, or redo just one without re-rendering the whole video.</p>
     </div>
-    <div class="feature">
+    <div class="feature spot">
       <h3>Cost-aware model tiers</h3>
       <p>Budget, Balanced, or Higher quality — pick how much you want to spend before you generate anything.</p>
     </div>
-    <div class="feature">
+    <div class="feature spot">
       <h3>Voice preview</h3>
       <p>Hear a narrator voice before committing a whole video to it.</p>
     </div>
-    <div class="feature">
+    <div class="feature spot">
       <h3>Searchable library</h3>
       <p>Every video and podcast you make is saved automatically — searchable, filterable by grade, sortable by date.</p>
     </div>
-    <div class="feature">
+    <div class="feature spot">
       <h3>Optional podcast music</h3>
       <p>A quiet ambient bed, fully synthesized locally — no licensed audio, no copyright questions.</p>
     </div>
-    <div class="feature">
+    <div class="feature spot">
       <h3>Real playback controls</h3>
       <p>Play, pause, resume, adjustable podcast speed — a proper media player, not just a generated file.</p>
     </div>
@@ -514,7 +697,7 @@
 </section>
 
 <section class="commitments" id="story">
-  <div class="commitments-wrap">
+  <div class="commitments-wrap" data-reveal>
     <span class="eyebrow">what we stand for</span>
     <div class="commit-row">
       <div class="commit-pill"><span class="check">✓</span> Accommodates Special Needs Learners</div>
@@ -525,23 +708,23 @@
 </section>
 
 <section>
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <span class="eyebrow">real learners</span>
     <h2>Stories from people using it</h2>
     <p>A few of the reasons this exists in the first place.</p>
   </div>
-  <div class="testimonials">
-    <div class="testimonial">
+  <div class="testimonials" data-reveal-group>
+    <div class="testimonial spot">
       <div class="who">Neurodivergent learner</div>
       <blockquote>"I didn't think I could understand training before."</blockquote>
       <p class="context">Fast-paced classroom lessons were hard for Rithika to keep up with. Given the room to move at her own speed, she worked through an entire AI curriculum on her own — and walked away genuinely proud of it.</p>
     </div>
-    <div class="testimonial">
+    <div class="testimonial spot">
       <div class="who">4th grade, self-taught 8th grade math</div>
       <blockquote>"Bhaia, look — you carry the exponent here and they cancel out! Your cool little app showed me a video on how to do that!"</blockquote>
       <p class="context">A single generated video was enough for Aleena, a fourth grader, to work out an eighth-grade math concept years ahead of seeing it in school.</p>
     </div>
-    <div class="testimonial">
+    <div class="testimonial spot">
       <div class="who">AP Chemistry</div>
       <blockquote>Titration finally clicked.</blockquote>
       <p class="context">Daniel's AP Chemistry class was moving faster than he could absorb it. A second, slower pass through the material with ShikhaAI was what finally made it stick.</p>
@@ -550,19 +733,19 @@
 </section>
 
 <section id="install">
-  <div class="section-head">
+  <div class="section-head" data-reveal>
     <span class="eyebrow">get it running</span>
     <h2>Up in about five minutes</h2>
     <p>Everything you need, in order — no extra steps hidden in a README you have to go hunting for.</p>
   </div>
   <div class="install">
-    <div class="req-row">
+    <div class="req-row" data-reveal-group>
       <div class="req-pill"><span class="req-num">1</span> Python 3.9 or newer</div>
       <div class="req-pill"><span class="req-num">2</span> <a href="https://www.videolan.org/vlc/">VLC media player</a> installed</div>
       <div class="req-pill"><span class="req-num">3</span> <a href="https://platform.openai.com/api-keys">OpenAI API key</a> with billing enabled</div>
     </div>
 
-    <div class="terminal">
+    <div class="terminal" data-reveal>
       <div class="terminal-bar"><span></span><span></span><span></span></div>
       <div class="terminal-body">
         <div><span class="c">$</span> git clone https://github.com/AbdullahZahir/ShikhaAI.git</div>
@@ -572,7 +755,7 @@
       </div>
     </div>
 
-    <div class="env-callout">
+    <div class="env-callout" data-reveal>
       <div class="callout-head"><span class="req-num">!</span> Before that last command — add your API key</div>
       <p>Copy <code class="mono">.env.example</code> to a new file named <code class="mono">.env</code> in the same folder, then edit it:</p>
       <code class="block">OPENAI_API_KEY=sk-your-key-here</code>
@@ -598,6 +781,9 @@
 </footer>
 
 <script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Cycling question chip (kept, made livelier) ---------- */
   const topics = [
     "why do volcanoes erupt?",
     "how do vaccines work?",
@@ -614,17 +800,177 @@
     "where does rain come from?",
     "why do bees make honey?"
   ];
-  let i = 0;
-  const chip = document.getElementById('topic-chip');
-  chip.style.transition = 'opacity .3s ease';
-  setInterval(() => {
-    i = (i + 1) % topics.length;
-    chip.style.opacity = 0;
-    setTimeout(() => {
-      chip.textContent = topics[i];
-      chip.style.opacity = 1;
-    }, 300);
-  }, 2600);
+  (function(){
+    let i = 0;
+    const chip = document.getElementById('topic-chip');
+    const text = document.getElementById('topic-text');
+    if(!chip || !text) return;
+    setInterval(() => {
+      i = (i + 1) % topics.length;
+      chip.style.opacity = 0;
+      chip.style.transform = 'translateY(6px)';
+      setTimeout(() => {
+        text.textContent = topics[i];
+        chip.style.opacity = 1;
+        chip.style.transform = 'translateY(0)';
+      }, 300);
+    }, 2600);
+  })();
+
+  /* ---------- Header shadow on scroll ---------- */
+  (function(){
+    const header = document.querySelector('header');
+    const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+
+  /* ---------- Scroll reveal ---------- */
+  (function(){
+    const els = document.querySelectorAll('[data-reveal],[data-reveal-group]');
+    if(reduceMotion || !('IntersectionObserver' in window)){
+      els.forEach(el => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    els.forEach(el => io.observe(el));
+  })();
+
+  /* ---------- Count-up stats ---------- */
+  (function(){
+    const nums = document.querySelectorAll('.num[data-count]');
+    if(!nums.length) return;
+    if(reduceMotion || !('IntersectionObserver' in window)) return; // leave real numbers
+    const run = (el) => {
+      const target = parseInt(el.dataset.count, 10);
+      const suffix = el.dataset.suffix || '';
+      const dur = 1300;
+      const start = performance.now();
+      const tick = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if(p < 1) requestAnimationFrame(tick);
+        else el.textContent = target + suffix;
+      };
+      el.textContent = '0' + suffix;
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if(e.isIntersecting){ run(e.target); io.unobserve(e.target); }
+      });
+    }, {threshold:0.6});
+    nums.forEach(n => io.observe(n));
+  })();
+
+  /* ---------- Cursor spotlight on cards ---------- */
+  (function(){
+    if(matchMedia('(hover: none)').matches) return;
+    document.querySelectorAll('.spot').forEach(card => {
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+      });
+    });
+  })();
+
+  /* ---------- Flame leans toward the cursor ---------- */
+  (function(){
+    if(reduceMotion || matchMedia('(hover: none)').matches) return;
+    const stage = document.getElementById('flame-stage');
+    const target = document.getElementById('flame-parallax');
+    if(!stage || !target) return;
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const dx = (e.clientX - (r.left + r.width/2)) / r.width;   // -0.5..0.5
+      const dy = (e.clientY - (r.top + r.height/2)) / r.height;
+      target.style.transform = `translate(${dx*16}px, ${dy*14}px)`;
+    });
+    stage.addEventListener('pointerleave', () => {
+      target.style.transform = 'translate(0,0)';
+    });
+  })();
+
+  /* ---------- Rising embers (the signature ambient motion) ---------- */
+  (function(){
+    const canvas = document.getElementById('embers');
+    if(!canvas || reduceMotion) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, dpr, embers = [];
+
+    const A = [124,108,240];   // --ember-a
+    const B = [34,211,238];    // --ember-b
+    const mix = (t) => `${Math.round(A[0]+(B[0]-A[0])*t)},${Math.round(A[1]+(B[1]-A[1])*t)},${Math.round(A[2]+(B[2]-A[2])*t)}`;
+
+    function count(){ return Math.max(18, Math.min(52, Math.floor(window.innerWidth / 26))); }
+
+    function makeEmber(seedTop){
+      const t = Math.random();
+      return {
+        x: Math.random() * w,
+        y: seedTop ? Math.random() * h : h + Math.random() * 60,
+        r: 0.8 + Math.random() * 1.9,
+        speed: 0.15 + Math.random() * 0.5,       // upward drift
+        sway: 0.4 + Math.random() * 0.9,         // horizontal amplitude
+        phase: Math.random() * Math.PI * 2,
+        freq: 0.006 + Math.random() * 0.012,
+        color: mix(t),
+        life: 0,
+        maxLife: 500 + Math.random() * 900
+      };
+    }
+
+    function resize(){
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      embers = Array.from({length: count()}, () => makeEmber(true));
+    }
+
+    function frame(){
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+      for(let i = 0; i < embers.length; i++){
+        const e = embers[i];
+        e.life++;
+        e.y -= e.speed;
+        e.phase += e.freq;
+        const x = e.x + Math.sin(e.phase) * e.sway * 8;
+
+        // fade in over first 12%, out over last 30% of life
+        const inP = Math.min(1, e.life / (e.maxLife * 0.12));
+        const outP = Math.min(1, Math.max(0, (e.maxLife - e.life) / (e.maxLife * 0.3)));
+        const alpha = 0.55 * inP * outP;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${e.color},${alpha})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `rgba(${e.color},${alpha})`;
+        ctx.arc(x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if(e.y < -20 || e.life > e.maxLife){
+          embers[i] = makeEmber(false);
+        }
+      }
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = 'source-over';
+      requestAnimationFrame(frame);
+    }
+
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
+    resize();
+    requestAnimationFrame(frame);
+  })();
 </script>
 
 </body>
