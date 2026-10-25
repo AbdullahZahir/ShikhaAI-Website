@@ -704,36 +704,4 @@
       }, 2400);
     });
   });
-
-  /* ---------- Latest release, fetched live from GitHub ---------- */
-  const release = document.getElementById('release');
-  if (release) {
-    const field = (name) => release.querySelector(`[data-release="${name}"]`);
-    const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-
-    fetch('https://api.github.com/repos/AbdullahZahir/ShikhaAI/releases/latest', {
-      headers: { Accept: 'application/vnd.github+json' },
-      signal: controller.signal,
-    })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-      .then((data) => {
-        const asset = (data.assets || [])[0];
-        const parts = [`Published ${dateFormat.format(new Date(data.published_at))}`];
-        if (asset) {
-          const type = asset.name.split('.').pop().toUpperCase();
-          parts.push(`${type}, ${(asset.size / 1e6).toFixed(1)} MB`);
-        }
-        field('version').textContent = data.tag_name;
-        field('meta').textContent = parts.join(' · ');
-        field('link').href = data.html_url;
-      })
-      // On any failure the static v1.0.0 details already in the markup stay in place.
-      .catch(() => {})
-      .finally(() => {
-        clearTimeout(timeout);
-        release.setAttribute('aria-busy', 'false');
-      });
-  }
 })();
